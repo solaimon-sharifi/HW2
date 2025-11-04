@@ -200,6 +200,63 @@ DELETE FROM calculations
 WHERE id = 2;  -- example record to remove
 ```
 
+## Security & secrets
+
+A few important steps and tools to keep your repository and CI secure.
+
+- If you accidentally exposed an API key (for example an OpenAI `sk-` key), revoke it immediately from the provider's dashboard. For OpenAI go to:
+    https://platform.openai.com/account/api-keys
+
+- Add real credentials to GitHub Actions as repository Secrets instead of committing them into files.
+    1. Go to your repository → Settings → Secrets and variables → Actions → New repository secret.
+    2. Add values such as `POSTGRES_PASSWORD`, `OPENAI_API_KEY`, etc.
+    3. The CI workflow will prefer these secrets when present.
+
+- Quick local secret-scan with gitleaks (recommended before pushing):
+
+```bash
+# Install (macOS/Homebrew / Linux packages / binary download)
+# Then run from the repo root:
+gitleaks detect --source . --redact
+```
+
+- If you must remove a secret from git history (dangerous — rewrites history):
+
+Option A — `git-filter-repo` (recommended):
+
+```bash
+# Make a mirror backup first
+git clone --mirror git@github.com:youruser/yourrepo.git /tmp/repo-mirror.git
+cd /tmp/repo-mirror.git
+# Create a file mapping literal secret -> replacement
+echo 'sk-REPLACE_THIS==>REMOVED-OPENAI-KEY' > replace.txt
+# Run filter-repo to replace the secret across history
+git filter-repo --replace-text replace.txt
+# Force-push cleaned history
+git push --force --all origin
+git push --force --tags origin
+```
+
+Option B — BFG Repo-Cleaner (simpler UI):
+
+```bash
+# Mirror-clone then run BFG with a file that contains the literal secret
+git clone --mirror git@github.com:youruser/yourrepo.git
+java -jar bfg.jar --replace-text passwords.txt repo.git
+cd repo.git
+git reflog expire --expire=now --all && git gc --prune=now --aggressive
+git push --force
+```
+
+- After scrubbing: inform collaborators to re-clone the repo (history was rewritten).
+
+If you'd like, I can run the scrub locally and prepare the cleaned repo and/or add a small docs page describing exactly which secrets to rotate and where to update CI. Reply with which of the following you want me to do next:
+
+- `revoke-guidance` — I will give exact revocation steps per provider you name (OpenAI, AWS, GitHub PAT, etc.).
+- `clean-local` — I will remove the literal secret from this repo's history locally and leave a cleaned repo for you to inspect (no force-push).
+- `clean-and-push <remote>` — I will clean and force-push to the given remote (must confirm you accept history rewrite).
+
+
 Documenting outputs and screenshots
 
 1. After each SQL command run in pgAdmin, take a screenshot showing the Query Tool: the SQL you ran and the output (e.g., "Query returned successfully: X rows affected" or the result grid).
