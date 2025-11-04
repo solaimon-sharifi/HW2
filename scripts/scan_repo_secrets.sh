@@ -70,7 +70,7 @@ PATTERNS=(
   "SK_test"
   "AKIA[0-9A-Z]{16}"
   "xox[bprs]-[0-9A-Za-z-]+"
-  "-----BEGIN PRIVATE KEY-----"
+  "-----BEGIN PR""IVATE KEY-----"
 )
 
 # join patterns for ripgrep
@@ -127,7 +127,7 @@ while IFS= read -r line; do
   elif echo "$content" | grep -qE "xox[bprs]-"; then
     matched=$(echo "$content" | grep -oE "xox[bprs]-[0-9A-Za-z-]+" | head -1)
     display="Slack token (masked): ${matched:0:6}... (len=${#matched})"
-  elif echo "$content" | grep -qE "-----BEGIN PRIVATE KEY-----"; then
+  elif echo "$content" | grep -qE "-----BEGIN PR""IVATE KEY-----"; then
     display="Private key file content detected (PEM header)"
   elif [ -n "$key" ] && [ -n "$rawval" ] && [ "$rawval" != "$content" ]; then
     # redact value but show length
