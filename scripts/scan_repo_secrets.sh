@@ -9,6 +9,15 @@ set -euo pipefail
 # file paths, line numbers, the detected key name (if any) and a redacted
 # indicator (length or masked). It will NOT print full secret values.
 
+# SECURITY NOTE:
+# Do NOT embed any real private keys, tokens, or credentials inside this
+# script. If you need example values for tests, store them in a separate
+# `.env.example` or a test fixture and keep them redacted. This script
+# intentionally reports matches and will redact values; however any
+# committed literal secret remains in git history until removed with a
+# history-rewriting tool (git-filter-repo or BFG). Use the repo-clean
+# workflow or contact the repo owner to scrub history.
+
 ROOT_ARG=${1:-.}
 TMP_CLONE=""
 
