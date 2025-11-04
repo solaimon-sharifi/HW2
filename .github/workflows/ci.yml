@@ -12,6 +12,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Secret scan (fail on obvious keys)
+        run: |
+          set -euo pipefail
+          # Scan the working tree for common secret patterns (OpenAI sk-, GitHub ghp_, AWS AKIA)
+          FOUND=$(git grep -I -n -E "sk-[A-Za-z0-9_\-]{20,}|ghp_[A-Za-z0-9_]{8,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_\-]{35,}" || true)
+          if [ -n "${FOUND}" ]; then
+            echo "Potential secret(s) found:" >&2
+            echo "${FOUND}" >&2
+            exit 1
+          fi
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
