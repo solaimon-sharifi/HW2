@@ -15,6 +15,21 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Create .env for CI
+        run: |
+          cat > .env <<'ENV'
+          POSTGRES_USER=ci_user
+          POSTGRES_PASSWORD=ci_pass
+          POSTGRES_DB=ci_db
+          PGADMIN_DEFAULT_EMAIL=admin@example.com
+          PGADMIN_DEFAULT_PASSWORD=pgadmin_pass
+          DB_HOST=db
+          DB_PORT=5432
+          DB_USER=ci_user
+          DB_PASSWORD=ci_pass
+          DB_NAME=ci_db
+          ENV
+
       - name: Build and start docker-compose
         run: |
           docker compose up --build -d
